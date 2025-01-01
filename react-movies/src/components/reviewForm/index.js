@@ -11,26 +11,11 @@ import MuiAlert from "@mui/material/Alert";
 import { useNavigate } from "react-router-dom";
 
 const ratings = [
-  {
-    value: 5,
-    label: "Excellent",
-  },
-  {
-    value: 4,
-    label: "Good",
-  },
-  {
-    value: 3,
-    label: "Average",
-  },
-  {
-    value: 2,
-    label: "Poor",
-  },
-  {
-    value: 0,
-    label: "Terrible",
-  },
+  { value: 5, label: "Excellent" },
+  { value: 4, label: "Good" },
+  { value: 3, label: "Average" },
+  { value: 2, label: "Poor" },
+  { value: 1, label: "Terrible" },
 ];
 
 const styles = {
@@ -46,12 +31,6 @@ const styles = {
       marginTop: 2,
     },
   },
-  textField: {
-    width: "40ch",
-  },
-  submit: {
-    marginRight: 2,
-  },
   snack: {
     width: "50%",
     "& > * ": {
@@ -61,38 +40,50 @@ const styles = {
 };
 
 const ReviewForm = ({ movie }) => {
-  const context = useContext(MoviesContext);
+  const { addToFavorites } = useContext(MoviesContext); // Access the context
   const [rating, setRating] = useState(3);
-const [open, setOpen] = useState(false); 
-const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
   const defaultValues = {
     author: "",
     review: "",
-    agree: false,
     rating: "3",
   };
-  const handleSnackClose = (event) => {
+
+  const handleSnackClose = () => {
     setOpen(false);
     navigate("/movies/favorites");
   };
-  
-  const {
-    control,
-    formState: { errors },
-    handleSubmit,
-    reset,
-  } = useForm(defaultValues);
+
+  const { control, formState: { errors }, handleSubmit, reset } = useForm({
+    defaultValues,
+  });
 
   const handleRatingChange = (event) => {
     setRating(event.target.value);
   };
 
-  const onSubmit = (review) => {
-    review.movieId = movie.id;
-    review.rating = rating;
-    // console.log(review);
-    context.addReview(movie, review);
-    setOpen(true); // NEW
+  const onSubmit = async (data) => {
+    try {
+      // Use context to interact with favorites or reviews
+      addToFavorites(movie); // Example: Add the movie to favorites (optional)
+
+      console.log("Submitting review:", {
+        movieId: movie.id,
+        review: data.review,
+        rating,
+      });
+
+      // Simulate adding a review (replace this with your actual API call or context function)
+      setTimeout(() => {
+        setOpen(true);
+        navigate(`/movies/${movie.id}`);
+      }, 2000);
+    } catch (err) {
+      setError(err.message || "Failed to submit review");
+    }
   };
 
   return (
@@ -100,6 +91,7 @@ const navigate = useNavigate();
       <Typography component="h2" variant="h3">
         Write a review
       </Typography>
+
       <Snackbar
         sx={styles.snack}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
@@ -116,32 +108,14 @@ const navigate = useNavigate();
           </Typography>
         </MuiAlert>
       </Snackbar>
+
+      {error && (
+        <MuiAlert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </MuiAlert>
+      )}
+
       <form sx={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
-        <Controller
-          name="author"
-          control={control}
-          rules={{ required: "Name is required" }}
-          defaultValue=""
-          render={({ field: { onChange, value } }) => (
-            <TextField
-              sx={{ width: "40ch" }}
-              variant="outlined"
-              margin="normal"
-              required
-              onChange={onChange}
-              value={value}
-              id="author"
-              label="Author's name"
-              name="author"
-              autoFocus
-            />
-          )}
-        />
-        {errors.author && (
-          <Typography variant="h6" component="p">
-            {errors.author.message}
-          </Typography>
-        )}
         <Controller
           name="review"
           control={control}
@@ -149,7 +123,6 @@ const navigate = useNavigate();
             required: "Review cannot be empty.",
             minLength: { value: 10, message: "Review is too short" },
           }}
-          defaultValue=""
           render={({ field: { onChange, value } }) => (
             <TextField
               variant="outlined"
@@ -167,7 +140,7 @@ const navigate = useNavigate();
           )}
         />
         {errors.review && (
-          <Typography variant="h6" component="p">
+          <Typography variant="h6" component="p" color="error">
             {errors.review.message}
           </Typography>
         )}
@@ -175,7 +148,7 @@ const navigate = useNavigate();
         <Controller
           control={control}
           name="rating"
-          render={({ field: { onChange, value } }) => (
+          render={() => (
             <TextField
               id="select-rating"
               select
@@ -194,25 +167,17 @@ const navigate = useNavigate();
           )}
         />
 
-        <Box sx={styles.buttons}>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            sx={styles.submit}
-          >
+        <Box>
+          <Button type="submit" variant="contained" color="primary">
             Submit
           </Button>
           <Button
             type="reset"
             variant="contained"
             color="secondary"
-            sx={styles.submit}
             onClick={() => {
-              reset({
-                author: "",
-                content: "",
-              });
+              reset({ review: "" });
+              setRating(3);
             }}
           >
             Reset
