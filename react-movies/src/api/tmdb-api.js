@@ -1,231 +1,109 @@
-export const getMovies = () => {
-  return fetch(
-    `https://api.themoviedb.org/3/discover/movie?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&include_adult=false&include_video=false&page=1`
-  ).then((response) => {
+import fetch from 'node-fetch';
+
+const tmdbBaseUrl = 'https://api.themoviedb.org/3';
+
+const handleErrors = async (response) => {
     if (!response.ok) {
-      return response.json().then((error) => {
-        throw new Error(error.status_message || "Something went wrong");
-      });
+        const error = await response.json();
+        throw new Error(error.message || 'TMDB API error');
     }
     return response.json();
-  })
-  .catch((error) => {
-      throw error
-  });
 };
-  
-export const getMovie = (args) => {
-  console.log(args)
-  const [, idPart] = args.queryKey;
-  const { id } = idPart;
-  return fetch(
-    `https://api.themoviedb.org/3/movie/${id}?api_key=${process.env.REACT_APP_TMDB_KEY}`
-  ).then((response) => {
-    if (!response.ok) {
-      return response.json().then((error) => {
-        throw new Error(error.status_message || "Something went wrong");
-      });
-    }
-    return response.json();
-  })
-  .catch((error) => {
-    throw error
- });
+
+export const getMovies = async () => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/discover/movie?api_key=${process.env.TMDB_KEY}&language=en-US&include_adult=false&include_video=false&page=1`
+    );
+    return handleErrors(response);
 };
-  
-  export const getGenres = () => {
-    return fetch(
-      "https://api.themoviedb.org/3/genre/movie/list?api_key=" +
-        process.env.REACT_APP_TMDB_KEY +
-        "&language=en-US"
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
-  
-  export const getMovieImages = ({ queryKey }) => {
-    const [, idPart] = queryKey;
-    const { id } = idPart;
-    return fetch(
-      `https://api.themoviedb.org/3/movie/${id}/images?api_key=${process.env.REACT_APP_TMDB_KEY}`
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
-  export const getMovieReviews = ({ queryKey }) => {
-    const [, idPart] = queryKey;
-    const { id } = idPart;
-    return fetch(
-      `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=${process.env.REACT_APP_TMDB_KEY}`
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
 
-  export const getUpcomingMovies = () => {
-    return fetch(
-      `https://api.themoviedb.org/3/movie/upcoming?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
+export const getMovie = async (id) => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/movie/${id}?api_key=${process.env.TMDB_KEY}`
+    );
+    return handleErrors(response);
+};
 
-  export const getNowPlayingMovies = () => {
-    return fetch(
-      `https://api.themoviedb.org/3/movie/now_playing?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
-  
-  export const getTopRatedMovies = () => {
-    return fetch(
-      `https://api.themoviedb.org/3/movie/top_rated?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
-  
-  export const getPopularMovies = () => {
-    return fetch(
-      `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
-  
-  export const getTrendingMovies = () => {
-    return fetch(
-      `https://api.themoviedb.org/3/trending/movie/week?api_key=${process.env.REACT_APP_TMDB_KEY}`
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
+export const getGenres = async () => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/genre/movie/list?api_key=${process.env.TMDB_KEY}&language=en-US`
+    );
+    return handleErrors(response);
+};
 
-  export const getMovieRecommendations = (id) => {
-    return fetch(
-      `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US&page=1`
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
-  
-  export const getMovieCredits = (id) => {
-    return fetch(
-      `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US`
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
-  
-  export const getPersonDetails = (id) => {
-    return fetch(
-      `https://api.themoviedb.org/3/person/${id}?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US`
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
-  
-  export const getPersonMovieCredits = (id) => {
-    return fetch(
-      `https://api.themoviedb.org/3/person/${id}/movie_credits?api_key=${process.env.REACT_APP_TMDB_KEY}&language=en-US`
-    ).then( (response) => {
-      if (!response.ok) {
-        return response.json().then((error) => {
-          throw new Error(error.status_message || "Something went wrong");
-        });
-      }
-      return response.json();
-    })
-    .catch((error) => {
-      throw error
-   });
-  };
+export const getMovieImages = async (id) => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/movie/${id}/images?api_key=${process.env.TMDB_KEY}`
+    );
+    return handleErrors(response);
+};
+
+export const getMovieReviews = async (id) => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/movie/${id}/reviews?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
+    );
+    return handleErrors(response);
+};
+
+export const getUpcomingMovies = async () => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/movie/upcoming?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
+    );
+    return handleErrors(response);
+};
+
+export const getNowPlayingMovies = async () => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/movie/now_playing?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
+    );
+    return handleErrors(response);
+};
+
+export const getTopRatedMovies = async () => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/movie/top_rated?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
+    );
+    return handleErrors(response);
+};
+
+export const getPopularMovies = async () => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/movie/popular?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
+    );
+    return handleErrors(response);
+};
+
+export const getTrendingMovies = async () => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/trending/movie/week?api_key=${process.env.TMDB_KEY}`
+    );
+    return handleErrors(response);
+};
+
+export const getMovieRecommendations = async (id) => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/movie/${id}/recommendations?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
+    );
+    return handleErrors(response);
+};
+
+export const getMovieCredits = async (id) => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/movie/${id}/credits?api_key=${process.env.TMDB_KEY}&language=en-US`
+    );
+    return handleErrors(response);
+};
+
+export const getPersonDetails = async (id) => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/person/${id}?api_key=${process.env.TMDB_KEY}&language=en-US`
+    );
+    return handleErrors(response);
+};
+
+export const getPersonMovieCredits = async (id) => {
+    const response = await fetch(
+        `${tmdbBaseUrl}/person/${id}/movie_credits?api_key=${process.env.TMDB_KEY}&language=en-US`
+    );
+    return handleErrors(response);
+};
