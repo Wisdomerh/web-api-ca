@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 
 const SignupForm = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,15 +27,26 @@ const SignupForm = () => {
       return setError('Passwords do not match');
     }
 
+    if (password.length < 8) {
+      return setError('Password must be at least 8 characters long');
+    }
+
+    // Add password strength validation
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return setError('Password must contain at least one letter, one number, and one special character');
+    }
+
     try {
       setError('');
       setLoading(true);
-      await signup(email, password);
+      await signup(username, password);
       navigate('/');
     } catch (err) {
-      setError('Failed to create an account: ' + err.message);
+      setError(err.message || 'Failed to create an account');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
@@ -61,14 +72,15 @@ const SignupForm = () => {
 
           <form onSubmit={handleSubmit}>
             <TextField
-              label="Email"
-              type="email"
+              label="Username"
+              type="text"
               fullWidth
               margin="normal"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               variant="outlined"
+              disabled={loading}
             />
             <TextField
               label="Password"
@@ -79,6 +91,8 @@ const SignupForm = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               variant="outlined"
+              disabled={loading}
+              helperText="At least 8 characters, one letter, one number, and one special character"
             />
             <TextField
               label="Confirm Password"
@@ -89,6 +103,7 @@ const SignupForm = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               variant="outlined"
+              disabled={loading}
             />
             <Button
               type="submit"
@@ -105,7 +120,7 @@ const SignupForm = () => {
               }}
               disabled={loading}
             >
-              Sign Up
+              {loading ? 'Creating Account...' : 'Sign Up'}
             </Button>
           </form>
 
@@ -115,6 +130,7 @@ const SignupForm = () => {
               <Button 
                 onClick={() => navigate('/login')}
                 sx={{ textTransform: 'none' }}
+                disabled={loading}
               >
                 Sign In
               </Button>
