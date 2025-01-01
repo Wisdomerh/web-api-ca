@@ -1,75 +1,72 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged 
-} from 'firebase/auth';
-import { auth } from '../firebase-config';
+import React, { useState, createContext, useContext, useEffect } from "react";
+import { login as apiLogin, signup as apiSignup } from '../api/tmdb-api';
 
-const AuthContext = createContext(); // Context to provide auth-related data globally
+export const AuthContext = createContext(null);
 
-export function useAuth() {
-  return useContext(AuthContext); // Custom hook to access auth data
-}
+export const AuthProvider = ({ children }) => {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null); // Holds the current user's details
-  const [loading, setLoading] = useState(true); // Ensures components wait for auth state resolution
+    useEffect(() => {
+        // Check for existing token on mount
+        const token = localStorage.getItem('token');
+        const user = localStorage.getItem('user');
+        if (token && user) {
+            setCurrentUser(JSON.parse(user));
+            setIsAuthenticated(true);
+        }
+        setLoading(false);
+    }, []);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user); // Updates the current user on state change
-      setLoading(false); // Signals that auth state is resolved
-    });
+    const login = async (username, password) => {
+        try {
+            const response = await apiLogin(username, password);
+            setCurrentUser({ username: username }); // Update based on your user object structure
+            setIsAuthenticated(true);
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('user', JSON.stringify({ username: username }));
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    };
 
-    return unsubscribe; // Cleanup listener on unmount
-  }, []);
+    const signup = async (username, password) => {
+        try {
+            await apiSignup(username, password);
+            // After successful signup, log the user in
+            return login(username, password);
+        } catch (error) {
+            throw error;
+        }
+    };
 
-  const signup = async (email, password) => {
-    try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      setCurrentUser(result.user); // Update current user after signup
-      return result;
-    } catch (error) {
-      console.error("Signup error:", error);
-      throw error;
-    }
-  };
+    const logout = () => {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+    };
 
-  const login = async (email, password) => {
-    try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      setCurrentUser(result.user); // Update current user after login
-      return result;
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error;
-    }
-  };
+    const value = {
+        isAuthenticated,
+        currentUser,
+        login,
+        logout,
+        signup,
+        loading
+    };
 
-  const logout = async () => {
-    try {
-      await signOut(auth);
-      setCurrentUser(null); // Clear user data after logout
-    } catch (error) {
-      console.error("Logout error:", error);
-      throw error;
-    }
-  };
+    return (
+        <AuthContext.Provider value={value}>
+            {!loading ? children : <div>Loading...</div>}
+        </AuthContext.Provider>
+    );
+};
 
-  const value = {
-    currentUser,
-    signup,
-    login,
-    logout
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading ? children : <div>Loading...</div>} {/* Render children once auth state resolves */}
-    </AuthContext.Provider>
-  );
-}
+export const useAuth = () => {
+    return useContext(AuthContext);
+};
 
 export default AuthProvider;
