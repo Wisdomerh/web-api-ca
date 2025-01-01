@@ -12,9 +12,10 @@ import {
 } from '@mui/material';
 
 const LoginForm = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -22,13 +23,14 @@ const LoginForm = () => {
     e.preventDefault();
     try {
       setError('');
-      await login(email, password);
-      console.log("Login successful");
+      setLoading(true);
+      await login(username, password);
       navigate('/');
     } catch (err) {
-      setError('Failed to sign in: ' + err.message);
+      setError(err.message || 'Failed to sign in');
       console.error("Login error:", err);
     }
+    setLoading(false);
   };
 
   return (
@@ -36,11 +38,17 @@ const LoginForm = () => {
       display: 'flex', 
       justifyContent: 'center',
       alignItems: 'center',
-      minHeight: 'calc(100vh - 64px)'
+      minHeight: 'calc(100vh - 64px)',
+      backgroundColor: '#f5f5f5'
     }}>
-      <Card sx={{ maxWidth: 400, width: '100%', m: 2 }}>
-        <CardContent>
-          <Typography variant="h5" component="h1" gutterBottom>
+      <Card sx={{ 
+        maxWidth: 400, 
+        width: '100%', 
+        m: 2,
+        boxShadow: 3 
+      }}>
+        <CardContent sx={{ p: 3 }}>
+          <Typography variant="h5" component="h1" gutterBottom align="center">
             Login
           </Typography>
 
@@ -48,13 +56,14 @@ const LoginForm = () => {
 
           <form onSubmit={handleSubmit}>
             <TextField
-              label="Email"
-              type="email"
+              label="Username"
+              type="text"
               fullWidth
               margin="normal"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
+              variant="outlined"
             />
             <TextField
               label="Password"
@@ -64,16 +73,38 @@ const LoginForm = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              variant="outlined"
             />
             <Button
               type="submit"
               variant="contained"
               fullWidth
-              sx={{ mt: 2 }}
+              sx={{ 
+                mt: 3,
+                mb: 2,
+                height: '46px',
+                backgroundColor: 'secondary.main',
+                '&:hover': {
+                  backgroundColor: 'secondary.dark',
+                }
+              }}
+              disabled={loading}
             >
               Login
             </Button>
           </form>
+
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Typography variant="body2">
+              Don't have an account?{' '}
+              <Button 
+                onClick={() => navigate('/signup')}
+                sx={{ textTransform: 'none' }}
+              >
+                Sign Up
+              </Button>
+            </Typography>
+          </Box>
         </CardContent>
       </Card>
     </Box>
