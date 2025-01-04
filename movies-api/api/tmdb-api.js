@@ -37,13 +37,6 @@ export const getMovieImages = async (id) => {
     return handleErrors(response);
 };
 
-export const getMovieImages = async (id) => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/movie/${id}/images?api_key=${process.env.TMDB_KEY}`
-    );
-    return handleErrors(response);
-};
-
 export const getMovieReviews = async (id) => {
     const response = await fetch(
         `${tmdbBaseUrl}/movie/${id}/reviews?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
