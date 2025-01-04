@@ -1,4 +1,4 @@
-import React, { useEffect, useState }  from "react";
+import React from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -10,14 +10,15 @@ import { Link } from "react-router-dom";
 import { getMovieReviews } from "../../api/tmdb-api";
 import { excerpt } from "../../util";
 import { useQuery } from "react-query";
-import Spinner from '../spinner'
+import Spinner from '../spinner';
+import { getTMDBMovieReviews } from "../../api/tmdb-api"; 
 
 export default function MovieReviews({ movie }) {
-  const { data , error, isLoading, isError } = useQuery(
+  const { data, error, isLoading, isError } = useQuery(
     ["reviews", { id: movie.id }],
-    getMovieReviews
+    getTMDBMovieReviews, getMovieReviews
   );
-  
+
   if (isLoading) {
     return <Spinner />;
   }
@@ -25,15 +26,39 @@ export default function MovieReviews({ movie }) {
   if (isError) {
     return <h1>{error.message}</h1>;
   }
-  
-  const reviews = data.results;
+
+  // TMDB API returns data in this structure
+  const reviews = data.results;  // Direct access to results array
+
+  if (!reviews || reviews.length === 0) {
+    return (
+      <TableContainer component={Paper}>
+        <Table sx={{minWidth: 550}} aria-label="reviews table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Author</TableCell>
+              <TableCell align="center">Excerpt</TableCell>
+              <TableCell align="right">More</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow>
+              <TableCell colSpan={3} align="center">
+                No reviews for this movie yet.
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  }
 
   return (
     <TableContainer component={Paper}>
       <Table sx={{minWidth: 550}} aria-label="reviews table">
         <TableHead>
           <TableRow>
-            <TableCell >Author</TableCell>
+            <TableCell>Author</TableCell>
             <TableCell align="center">Excerpt</TableCell>
             <TableCell align="right">More</TableCell>
           </TableRow>
@@ -44,13 +69,13 @@ export default function MovieReviews({ movie }) {
               <TableCell component="th" scope="row">
                 {r.author}
               </TableCell>
-              <TableCell >{excerpt(r.content)}</TableCell>
-              <TableCell >
-              <Link
+              <TableCell>{excerpt(r.content)}</TableCell>
+              <TableCell>
+                <Link
                   to={`/reviews/${r.id}`}
                   state={{
-                      review: r,
-                      movie: movie,
+                    review: r,
+                    movie: movie,
                   }}
                 >
                   Full Review
