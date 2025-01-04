@@ -1,109 +1,223 @@
-import fetch from 'node-fetch';
+const BASE_URL = 'http://localhost:8080/api';
 
-const tmdbBaseUrl = 'https://api.themoviedb.org/3';
-
-const handleErrors = async (response) => {
+const handleResponse = async (response) => {
     if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'TMDB API error');
+        throw new Error(error.message || 'Something went wrong');
     }
     return response.json();
 };
 
-export const getMovies = async () => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/discover/movie?api_key=${process.env.TMDB_KEY}&language=en-US&include_adult=false&include_video=false&page=1`
-    );
-    return handleErrors(response);
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return {};
+  
+  return {
+      'Authorization': token,
+      'Content-Type': 'application/json'
+  };
+};
+export const signup = async (username, password) => {
+  console.log('Attempting to register user:', username);
+  try {
+      const response = await fetch(
+          `${BASE_URL}/users?action=register`,
+          {
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              method: 'POST',
+              body: JSON.stringify({ username, password })
+          }
+      );
+
+      const data = await response.json();
+      console.log('Registration response:', data);
+
+      if (!response.ok) {
+          throw new Error(data.msg || 'Registration failed');
+      }
+
+      return data;
+  } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+  }
 };
 
-export const getMovie = async (id) => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/movie/${id}?api_key=${process.env.TMDB_KEY}`
-    );
-    return handleErrors(response);
+export const login = async (username, password) => {
+  try {
+      const response = await fetch(
+          `${BASE_URL}/users`,
+          {
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              method: 'POST',
+              body: JSON.stringify({ username, password })
+          }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+          throw new Error(data.msg || 'Login failed');
+      }
+
+      // Store the token
+      localStorage.setItem('token', data.token);
+      
+      return data;
+  } catch (error) {
+      throw error;
+  }
 };
 
-export const getGenres = async () => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/genre/movie/list?api_key=${process.env.TMDB_KEY}&language=en-US`
-    );
-    return handleErrors(response);
+// Movies
+export const getMovies = () => {
+    return fetch(`${BASE_URL}/movies/tmdb/discover`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
 };
 
-export const getMovieImages = async (id) => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/movie/${id}/images?api_key=${process.env.TMDB_KEY}`
-    );
-    return handleErrors(response);
+export const getMovie = (args) => {
+    const [, idPart] = args.queryKey;
+    const { id } = idPart;
+    return fetch(`${BASE_URL}/movies/tmdb/movie/${id}`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
 };
 
-export const getMovieReviews = async (id) => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/movie/${id}/reviews?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
-    );
-    return handleErrors(response);
+export const getGenres = () => {
+    return fetch(`${BASE_URL}/movies/tmdb/genres`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
 };
 
-export const getUpcomingMovies = async () => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/movie/upcoming?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
-    );
-    return handleErrors(response);
+export const getMovieImages = ({ queryKey }) => {
+    const [, idPart] = queryKey;
+    const { id } = idPart;
+    return fetch(`${BASE_URL}/movies/tmdb/movie/${id}/images`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
 };
 
-export const getNowPlayingMovies = async () => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/movie/now_playing?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
-    );
-    return handleErrors(response);
+export const getUpcomingMovies = () => {
+    return fetch(`${BASE_URL}/movies/tmdb/upcoming`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
 };
 
-export const getTopRatedMovies = async () => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/movie/top_rated?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
-    );
-    return handleErrors(response);
+export const getNowPlayingMovies = () => {
+    return fetch(`${BASE_URL}/movies/tmdb/now-playing`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
 };
 
-export const getPopularMovies = async () => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/movie/popular?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
-    );
-    return handleErrors(response);
+export const getTopRatedMovies = () => {
+    return fetch(`${BASE_URL}/movies/tmdb/top-rated`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
 };
 
-export const getTrendingMovies = async () => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/trending/movie/week?api_key=${process.env.TMDB_KEY}`
-    );
-    return handleErrors(response);
+export const getPopularMovies = () => {
+    return fetch(`${BASE_URL}/movies/tmdb/popular`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
 };
 
-export const getMovieRecommendations = async (id) => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/movie/${id}/recommendations?api_key=${process.env.TMDB_KEY}&language=en-US&page=1`
-    );
-    return handleErrors(response);
+export const getTrendingMovies = () => {
+    return fetch(`${BASE_URL}/movies/tmdb/trending`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
 };
 
-export const getMovieCredits = async (id) => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/movie/${id}/credits?api_key=${process.env.TMDB_KEY}&language=en-US`
-    );
-    return handleErrors(response);
+export const getMovieRecommendations = (id) => {
+    return fetch(`${BASE_URL}/movies/tmdb/movie/${id}/recommendations`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
 };
 
-export const getPersonDetails = async (id) => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/person/${id}?api_key=${process.env.TMDB_KEY}&language=en-US`
-    );
-    return handleErrors(response);
+export const getMovieCredits = (id) => {
+    return fetch(`${BASE_URL}/movies/tmdb/movie/${id}/credits`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
 };
 
-export const getPersonMovieCredits = async (id) => {
-    const response = await fetch(
-        `${tmdbBaseUrl}/person/${id}/movie_credits?api_key=${process.env.TMDB_KEY}&language=en-US`
-    );
-    return handleErrors(response);
+export const getPersonDetails = (id) => {
+    return fetch(`${BASE_URL}/movies/tmdb/person/${id}`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
+};
+
+export const getPersonMovieCredits = (id) => {
+    return fetch(`${BASE_URL}/movies/tmdb/person/${id}/movie-credits`, {
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
+};
+
+
+export const getMovieReviews = ({ queryKey }) => {
+    const [, idPart] = queryKey;
+    const { id } = idPart;
+    return fetch(`${BASE_URL}/reviews/movie/${id}`, {  // Changed to match your backend route
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
+};
+
+// Add function for getting TMDB reviews specifically
+export const getTMDBMovieReviews = ({ queryKey }) => {
+    const [, idPart] = queryKey;
+    const { id } = idPart;
+    return fetch(`${BASE_URL}/reviews/tmdb/movie/${id}/reviews`, {  // This matches your TMDB route
+        headers: getAuthHeaders(),
+    }).then(handleResponse);
+};
+
+export const addReview = async (movieId, review, rating, movieTitle) => {
+    return fetch(`${BASE_URL}/reviews`, {  // Removed extra 'api' from path
+        method: 'POST',
+        headers: {
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify({
+            movieId,
+            review,
+            rating,
+            movieTitle
+        })
+    }).then(handleResponse);
+};
+
+export const deleteReview = async (reviewId) => {
+    try {
+        const response = await fetch(`${BASE_URL}/api/reviews/${reviewId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': localStorage.getItem('token')
+            }
+        });
+        return response.json();
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const updateReview = async (reviewId, review, rating) => {
+    try {
+        const response = await fetch(`${BASE_URL}/api/reviews/${reviewId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                review,
+                rating
+            })
+        });
+        return response.json();
+    } catch (error) {
+        throw error;
+    }
 };
