@@ -10,6 +10,7 @@ const ReviewSchema = new mongoose.Schema({
   created_at: { type: Date, default: Date.now }
 });
 
+// Add indexes for better query performance
 ReviewSchema.index({ userId: 1, movieId: 1 });
 ReviewSchema.index({ movieId: 1 });
 
