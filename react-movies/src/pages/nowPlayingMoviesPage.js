@@ -27,4 +27,4 @@ const NowPlayingMoviesPage = (props) => {
   );
 };
 
-export default NowPlayingMoviesPage; 
+export default NowPlayingMoviesPage;

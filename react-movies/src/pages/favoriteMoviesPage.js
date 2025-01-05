@@ -3,8 +3,7 @@ import PageTemplate from "../components/templateMovieListPage";
 import { MoviesContext } from "../contexts/moviesContext";
 import Spinner from '../components/spinner';
 import RemoveFromFavorites from "../components/cardIcons/removeFromFavorites";
-import WriteReview from "../components/cardIcons/addReview";
-
+import AddReviewIcon from "../components/cardIcons/addReview";
 const FavoriteMoviesPage = () => {
   const { favorites } = useContext(MoviesContext);
 
@@ -27,7 +26,7 @@ const FavoriteMoviesPage = () => {
         return (
           <>
             <RemoveFromFavorites movie={movie} />
-            <WriteReview movie={movie} />
+            <AddReviewIcon movie={movie} />
           </>
         );
       }}
