@@ -7,7 +7,7 @@ import { useQuery } from "react-query";
 import Spinner from '../components/spinner'
 import MovieCredits from "../components/movieCredits";
 import MovieRecommendations from "../components/movieRecommendations";
-
+import AddReviewIcon from "../components/cardIcons/addReview";
 const MoviePage = (props) => {
   const { id } = useParams();
   const { data: movie, error, isLoading, isError } = useQuery(
@@ -31,6 +31,7 @@ const MoviePage = (props) => {
             <MovieDetails movie={movie} />
             <MovieCredits movie={movie} />
             <MovieRecommendations movie={movie} />
+            <AddReviewIcon movie={movie} />
           </PageTemplate>
         </>
       ) : (

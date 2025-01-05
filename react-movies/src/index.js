@@ -51,6 +51,7 @@ const App = () => {
               <Route path="/person/:id" element={<ActorDetailsPage />} />
               <Route path="/login" element={<LoginForm />} />
               <Route path="/signup" element={<SignupForm />} />
+              <Route path="/reviews/form/:id" element={<AddMovieReviewPage />} />
             </Routes>
           </MoviesContextProvider>
         </BrowserRouter>
